@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   StyleSheet,
   Keyboard,
@@ -18,6 +18,31 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [tasks, setTasks] = useState([])
   const [newTask, setNewTask] = useState('')
+
+  useEffect(() => {
+    function getUser() {
+      if (!user) {
+        return
+      }
+
+      firebase
+        .database()
+        .ref('tasks')
+        .child(user)
+        .once('value', snapshot => {
+          setTasks([])
+          snapshot?.forEach(childItem => {
+            let data = {
+              key: childItem.key,
+              name: childItem.val().name
+            }
+            setTasks(oldTasks => [...oldTasks, data].reverse())
+          })
+        })
+    }
+
+    getUser()
+  }, [user])
 
   function handleAddTask() {
     if (newTask === '') {
