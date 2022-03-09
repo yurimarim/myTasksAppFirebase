@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   StyleSheet,
   Keyboard,
@@ -9,15 +9,17 @@ import {
   FlatList
 } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
-import { Feather } from 'react-native-vector-icons'
+import { Feather } from '@expo/vector-icons'
 import { Login } from './src/components/Login'
 import { TaskList } from './src/components/TaskList'
 import firebase from './src/services/firebaseConnection'
 
 export default function App() {
+  const inputRef = useRef(null)
   const [user, setUser] = useState(null)
   const [tasks, setTasks] = useState([])
   const [newTask, setNewTask] = useState('')
+  const [keyState, setKeyState] = useState('')
 
   useEffect(() => {
     function getUser() {
@@ -49,6 +51,30 @@ export default function App() {
       return
     }
 
+    // Usuário quer editar uma tarefa.
+    if (keyState !== '') {
+      firebase
+        .database()
+        .ref('tasks')
+        .child(user)
+        .child(key)
+        .update({
+          name: newTask
+        })
+        .then(() => {
+          const taskIndex = tasks.findIndex(item => {
+            item.key === keyState
+          })
+          const taskClone = tasks
+          taskClone[taskIndex].name = newTask
+          setTasks([...taskClone])
+        })
+      setKeyState('')
+      setNewTask('')
+      Keyboard.dismiss()
+      return
+    }
+
     let tasks = firebase.database().ref('tasks').child(user)
     let key = tasks.push().key
 
@@ -63,18 +89,29 @@ export default function App() {
           name: newTask
         }
 
-        setTasks(oldTasks => [...oldTasks, data].reverse())
+        setTasks(oldTasks => [...oldTasks, data])
       })
     setNewTask('')
     Keyboard.dismiss()
   }
 
-  function handleDeleteTask(id) {
-    console.log(id)
+  function handleDeleteTask(key) {
+    firebase
+      .database()
+      .ref('tasks')
+      .child(user)
+      .child(key)
+      .remove()
+      .then(() => {
+        const findTasks = tasks.filter(item => item.key !== key)
+        setTasks(findTasks)
+      })
   }
 
   function handleEditTask(data) {
-    console.log('ITEM CLICADO ' + JSON.stringify(data))
+    setKeyState(data.key)
+    setNewTask(data.name)
+    inputRef.current.focus()
   }
 
   if (!user) {
@@ -88,6 +125,7 @@ export default function App() {
         <TextInput
           value={newTask}
           onChangeText={text => setNewTask(text)}
+          ref={inputRef}
           style={styles.input}
           placeholder="Adicione sua tarefa..."
           underlineColorAndroid="transparent"
@@ -99,7 +137,7 @@ export default function App() {
 
       <FlatList
         data={tasks}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.key}
         renderItem={({ item }) => (
           <TaskList
             data={item}
