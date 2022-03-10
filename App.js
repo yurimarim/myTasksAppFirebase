@@ -6,7 +6,8 @@ import {
   TextInput,
   TouchableOpacity,
   SafeAreaView,
-  FlatList
+  FlatList,
+  Text
 } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { Feather } from '@expo/vector-icons'
@@ -113,6 +114,17 @@ export default function App() {
     inputRef.current.focus()
   }
 
+  function cancelEdit() {
+    setKeyState('')
+    setNewTask('')
+    Keyboard.dismiss()
+  }
+
+  function handleLogOut() {
+    firebase.auth().signOut()
+    setUser(null)
+  }
+
   if (!user) {
     return <Login changeStatus={user => setUser(user)} />
   }
@@ -120,6 +132,18 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
+
+      {keyState.length > 0 && (
+        <View style={styles.editAlert}>
+          <TouchableOpacity onPress={cancelEdit}>
+            <Feather name="x-circle" size={25} color="#ff5252" />
+          </TouchableOpacity>
+          <Text style={{ marginLeft: 10, color: '#ff5252', fontSize: 18 }}>
+            Você está editando uma tarefa!!
+          </Text>
+        </View>
+      )}
+
       <View style={styles.inputContainer}>
         <TextInput
           value={newTask}
@@ -144,7 +168,17 @@ export default function App() {
             editItem={handleEditTask}
           />
         )}
+        showsVerticalScrollIndicator={false}
       />
+
+      {user && (
+        <TouchableOpacity onPress={handleLogOut} style={styles.buttonLogout}>
+          <Feather name="log-out" size={25} color="#fff" />
+          <Text style={[styles.btnText, { marginLeft: 20, fontSize: 22 }]}>
+            LOGOUT
+          </Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   )
 }
@@ -155,6 +189,13 @@ const styles = StyleSheet.create({
     paddingTop: 25,
     paddingHorizontal: 10,
     backgroundColor: '#f2f6fc'
+  },
+  editAlert: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 8
   },
   inputContainer: {
     display: 'flex',
@@ -181,5 +222,23 @@ const styles = StyleSheet.create({
   btnText: {
     color: '#fff',
     fontSize: 20
+  },
+  logoutContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    backgroundColor: '#323232',
+    marginBottom: 10,
+    alignItems: 'center'
+  },
+  buttonLogout: {
+    backgroundColor: '#323232',
+    marginTop: 10,
+    marginBottom: 10,
+    padding: 8,
+    borderRadius: 4,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 })
