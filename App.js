@@ -38,7 +38,7 @@ export default function App() {
               key: childItem.key,
               name: childItem.val().name
             }
-            setTasks(oldTasks => [...oldTasks, data].reverse())
+            setTasks(oldTasks => [...oldTasks, data])
           })
         })
     }
@@ -57,35 +57,34 @@ export default function App() {
         .database()
         .ref('tasks')
         .child(user)
-        .child(key)
+        .child(keyState)
         .update({
           name: newTask
         })
         .then(() => {
-          const taskIndex = tasks.findIndex(item => {
-            item.key === keyState
-          })
+          const taskIndex = tasks.findIndex(item => item.key === keyState)
           const taskClone = tasks
           taskClone[taskIndex].name = newTask
+
           setTasks([...taskClone])
         })
-      setKeyState('')
-      setNewTask('')
       Keyboard.dismiss()
+      setNewTask('')
+      setKeyState('')
       return
     }
 
     let tasks = firebase.database().ref('tasks').child(user)
-    let key = tasks.push().key
+    let randomKey = tasks.push().key
 
     tasks
-      .child(key)
+      .child(randomKey)
       .set({
         name: newTask
       })
       .then(() => {
         const data = {
-          key: key,
+          key: randomKey,
           name: newTask
         }
 
