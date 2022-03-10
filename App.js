@@ -17,7 +17,7 @@ import firebase from './src/services/firebaseConnection'
 export default function App() {
   const inputRef = useRef(null)
   const [user, setUser] = useState(null)
-  const [tasks, setTasks] = useState([])
+  const [task, setTask] = useState([])
   const [newTask, setNewTask] = useState('')
   const [keyState, setKeyState] = useState('')
 
@@ -32,13 +32,13 @@ export default function App() {
         .ref('tasks')
         .child(user)
         .once('value', snapshot => {
-          setTasks([])
+          setTask([])
           snapshot?.forEach(childItem => {
             let data = {
               key: childItem.key,
               name: childItem.val().name
             }
-            setTasks(oldTasks => [...oldTasks, data])
+            setTask(oldTask => [...oldTask, data])
           })
         })
     }
@@ -62,11 +62,11 @@ export default function App() {
           name: newTask
         })
         .then(() => {
-          const taskIndex = tasks.findIndex(item => item.key === keyState)
-          const taskClone = tasks
+          const taskIndex = task.findIndex(item => item.key === keyState)
+          const taskClone = task
           taskClone[taskIndex].name = newTask
 
-          setTasks([...taskClone])
+          setTask([...taskClone])
         })
       Keyboard.dismiss()
       setNewTask('')
@@ -88,7 +88,7 @@ export default function App() {
           name: newTask
         }
 
-        setTasks(oldTasks => [...oldTasks, data])
+        setTask(oldTask => [...oldTask, data])
       })
     setNewTask('')
     Keyboard.dismiss()
@@ -102,8 +102,8 @@ export default function App() {
       .child(key)
       .remove()
       .then(() => {
-        const findTasks = tasks.filter(item => item.key !== key)
-        setTasks(findTasks)
+        const findTasks = task.filter(item => item.key !== key)
+        setTask(findTasks)
       })
   }
 
@@ -135,7 +135,7 @@ export default function App() {
       </View>
 
       <FlatList
-        data={tasks}
+        data={task}
         keyExtractor={item => item.key}
         renderItem={({ item }) => (
           <TaskList
