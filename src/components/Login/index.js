@@ -73,7 +73,7 @@ export function Login({ changeStatus }) {
         onPress={handleLogin}
         style={[
           styles.handleButtonLogin,
-          { backgroundColor: type === 'login' ? '#3ea6f2' : '#141414' }
+          { backgroundColor: type === 'login' ? '#3ea6f2' : '#ff5252' }
         ]}
       >
         <Text style={styles.btnText}>
