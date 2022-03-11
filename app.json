@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "myTasksAppFirebase",
-    "slug": "myTasksAppFirebase",
+    "name": "mytasks",
+    "slug": "mytasks",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#3ea6f2"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -20,13 +20,9 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "package": "com.yurimarim.mytasks", 
+      "versionCode": 1 
     }
   }
 }
+
