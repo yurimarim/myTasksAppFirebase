@@ -6,9 +6,12 @@ import {
   TextInput,
   TouchableOpacity,
   SafeAreaView,
-  Keyboard
+  Keyboard,
+  LogBox
 } from 'react-native'
 import firebase from '../../services/firebaseConnection'
+
+LogBox.ignoreAllLogs()
 
 export function Login({ changeStatus }) {
   const [type, setType] = useState('login')
