@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   SafeAreaView,
   FlatList,
-  Text
+  Text,
+  ActivityIndicator
 } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { Feather } from '@expo/vector-icons'
@@ -21,14 +22,15 @@ export default function App() {
   const [task, setTask] = useState([])
   const [newTask, setNewTask] = useState('')
   const [keyState, setKeyState] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    function getUser() {
+    async function getUser() {
       if (!user) {
         return
       }
 
-      firebase
+      await firebase
         .database()
         .ref('tasks')
         .child(user)
@@ -42,8 +44,8 @@ export default function App() {
             setTask(oldTask => [...oldTask, data])
           })
         })
+      setLoading(false)
     }
-
     getUser()
   }, [user])
 
@@ -123,64 +125,76 @@ export default function App() {
   function handleLogOut() {
     firebase.auth().signOut()
     setUser(null)
+    setLoading(true)
   }
 
   if (!user) {
     return <Login changeStatus={user => setUser(user)} />
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-
-      {keyState.length > 0 && (
-        <View style={styles.editAlert}>
-          <TouchableOpacity onPress={cancelEdit}>
-            <Feather name="x-circle" size={25} color="#ff5252" />
-          </TouchableOpacity>
-          <Text style={{ marginLeft: 10, color: '#ff5252', fontSize: 18 }}>
-            Você está editando uma tarefa!!
-          </Text>
-        </View>
-      )}
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          value={newTask}
-          onChangeText={text => setNewTask(text)}
-          ref={inputRef}
-          style={styles.input}
-          placeholder="Adicione sua tarefa..."
-          underlineColorAndroid="transparent"
-        />
-        <TouchableOpacity onPress={handleAddTask} style={styles.buttonAddTask}>
-          <Feather name="plus" size={26} color="#fff" />
-        </TouchableOpacity>
+  if (loading) {
+    return (
+      <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+        <ActivityIndicator color="#3ea6f2" size={50} />
       </View>
+    )
+  } else {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar style="dark" />
 
-      <FlatList
-        data={task}
-        keyExtractor={item => item.key}
-        renderItem={({ item }) => (
-          <TaskList
-            data={item}
-            deleteItem={handleDeleteTask}
-            editItem={handleEditTask}
-          />
+        {keyState.length > 0 && (
+          <View style={styles.editAlert}>
+            <TouchableOpacity onPress={cancelEdit}>
+              <Feather name="x-circle" size={25} color="#ff5252" />
+            </TouchableOpacity>
+            <Text style={{ marginLeft: 10, color: '#ff5252', fontSize: 18 }}>
+              Você está editando uma tarefa!!
+            </Text>
+          </View>
         )}
-        showsVerticalScrollIndicator={false}
-      />
 
-      {user && (
-        <TouchableOpacity onPress={handleLogOut} style={styles.buttonLogout}>
-          <Feather name="log-out" size={25} color="#fff" />
-          <Text style={[styles.btnText, { marginLeft: 20, fontSize: 22 }]}>
-            LOGOUT
-          </Text>
-        </TouchableOpacity>
-      )}
-    </SafeAreaView>
-  )
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={newTask}
+            onChangeText={text => setNewTask(text)}
+            ref={inputRef}
+            style={styles.input}
+            placeholder="Adicione sua tarefa..."
+            underlineColorAndroid="transparent"
+          />
+          <TouchableOpacity
+            onPress={handleAddTask}
+            style={styles.buttonAddTask}
+          >
+            <Feather name="plus" size={26} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          data={task}
+          keyExtractor={item => item.key}
+          renderItem={({ item }) => (
+            <TaskList
+              data={item}
+              deleteItem={handleDeleteTask}
+              editItem={handleEditTask}
+            />
+          )}
+          showsVerticalScrollIndicator={false}
+        />
+
+        {user && (
+          <TouchableOpacity onPress={handleLogOut} style={styles.buttonLogout}>
+            <Feather name="log-out" size={25} color="#fff" />
+            <Text style={[styles.btnText, { marginLeft: 20, fontSize: 22 }]}>
+              LOGOUT
+            </Text>
+          </TouchableOpacity>
+        )}
+      </SafeAreaView>
+    )
+  }
 }
 
 const styles = StyleSheet.create({
